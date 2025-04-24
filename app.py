@@ -1,19 +1,16 @@
-
 import os
-import openai
+from telegram.ext import ApplicationBuilder, MessageHandler, filters
+from langchain_openai import ChatOpenAI
+from langchain.schema import HumanMessage
 from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
+openai_api_key = os.getenv('OPENAI_API_KEY')
 
-memory = ConversationBufferMemory(memory_key="history", return_messages=True)
-chain = ConversationChain(llm=openai.ChatCompletion, memory=memory)
+llm = ChatOpenAI(api_key=openai_api_key, model="gpt-4o")
+memory = ConversationBufferMemory(return_messages=True)
 
-# FSM состояния
 states = {}
 
-# Функция отправки сообщений
 async def send_message(update, context, text):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
@@ -24,9 +21,13 @@ async def handle_message(update, context):
     if user_id not in states:
         states[user_id] = "initial"
 
-    # FSM логика
+    history = memory.load_memory_variables({})["history"]
+    messages = history + [HumanMessage(content=user_text)]
+
+    response = llm(messages).content
+    memory.save_context({"input": user_text}, {"output": response})
+
     if states[user_id] == "initial":
-        response = chain.run(user_text)
         await send_message(update, context, response)
         if "встреча" in user_text or "звонок" in user_text:
             states[user_id] = "waiting_confirmation"
@@ -39,7 +40,6 @@ async def handle_message(update, context):
     elif states[user_id] == "completed":
         await send_message(update, context, "Жду встречи! Если нужен перенос времени, сообщите.")
 
-# Основной метод запуска
 if __name__ == '__main__':
     application = ApplicationBuilder().token(os.getenv('TELEGRAM_TOKEN')).build()
     application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
