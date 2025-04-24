@@ -1,4 +1,3 @@
-flask
 openai>=1.0.0
-requests
-python-dotenv
+langchain
+python-telegram-bot>=20.0
