@@ -69,6 +69,53 @@ def telegram_webhook():
         send_telegram_message(chat_id, welcome)
         return "ok"
 
+    if text.startswith("/addall "):
+        if str(message.get("from", {}).get("id")) == "5275555034":
+            new_prompt = text.replace("/addall ", "", 1).strip()
+            with open("data/system_prompt.txt", "w", encoding="utf-8") as f:
+                f.write(new_prompt)
+            send_telegram_message(chat_id, "✅ System prompt fully replaced via /addall.")
+        else:
+            send_telegram_message(chat_id, "❌ You are not authorized to use this command.")
+        return "ok"
+    if text.strip() == "/prompt":
+        if str(message.get("from", {}).get("id")) == "5275555034":
+            try:
+                with open("data/system_prompt.txt", "r", encoding="utf-8") as f:
+                    prompt_text = f.read()
+                send_telegram_message(chat_id, f"📄 Current system prompt:
+
+" + prompt_text)
+            except Exception as e:
+                send_telegram_message(chat_id, "❌ Failed to read system prompt.")
+        else:
+            send_telegram_message(chat_id, "❌ You are not authorized to use this command.")
+        return "ok"
+
+
+    if text.startswith("/add "):
+        if str(message.get("from", {}).get("id")) == "5275555034":
+            new_part = text.replace("/add ", "", 1).strip()
+            with open("data/system_prompt.txt", "a", encoding="utf-8") as f:
+                f.write("
+" + new_part)
+            send_telegram_message(chat_id, "✅ Text appended to system prompt via /add.")
+        else:
+            send_telegram_message(chat_id, "❌ You are not authorized to use this command.")
+        return "ok"
+
+    if text.startswith("/admin setprompt "):
+        if str(message.get("from", {}).get("id")) == "5275555034":
+            new_prompt = text.replace("/admin setprompt ", "", 1).strip()
+            with open("data/system_prompt.txt", "w", encoding="utf-8") as f:
+                f.write(new_prompt)
+            send_telegram_message(chat_id, "✅ System prompt updated successfully.")
+        else:
+            send_telegram_message(chat_id, "❌ You are not authorized to use this command.")
+        return "ok"
+    
+
+
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
