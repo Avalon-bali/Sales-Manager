@@ -80,20 +80,21 @@ def telegram_webhook():
         return "ok"
     
     
+    
     if text.strip() == "/prompt":
         if str(message.get("from", {}).get("id")) == "5275555034":
             try:
                 with open("data/system_prompt.txt", "r", encoding="utf-8") as f:
                     prompt_text = f.read()
-                message_text = "📄 Current system prompt:
+                send_telegram_message(chat_id, "📄 Current system prompt:
 
-" + prompt_text
-                send_telegram_message(chat_id, message_text)
+" + prompt_text)
             except Exception as e:
                 send_telegram_message(chat_id, "❌ Failed to read system prompt.")
         else:
             send_telegram_message(chat_id, "❌ You are not authorized to use this command.")
         return "ok"
+    
     
     
 
