@@ -1,17 +1,15 @@
-from flask import Flask, request
+import os
 import openai
 import requests
-import os
+from flask import Flask, request
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
-WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
+TELEGRAM_TOKEN = "7938243060:AAFIAUO5SjHRmDClpE_pHxCdEmFczKsQc4Q"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
 def load_documents():
     folder = "data"
@@ -24,54 +22,32 @@ def load_documents():
 
 documents_context = load_documents()
 
-@app.route("/", methods=["GET"])
-def home():
-    return "Bot is running."
-
-@app.route("/webhook", methods=["GET"])
-def verify():
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
-    if token == VERIFY_TOKEN:
-        return challenge, 200
-    return "Invalid verification token", 403
-
-@app.route("/webhook", methods=["POST"])
+@app.route(f"/{TELEGRAM_TOKEN}", methods=["POST"])
 def webhook():
     data = request.get_json()
-    try:
-        message = data["entry"][0]["changes"][0]["value"]["messages"][0]
-        from_number = message["from"]
-        user_text = message["text"]["body"]
+    message = data["message"]
+    chat_id = message["chat"]["id"]
+    text = message.get("text", "")
 
-        openai.api_key = OPENAI_API_KEY
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": f"Ты менеджер по продажам Avalon. Используй следующую информацию при ответах:\n\n{documents_context}"},
-                {"role": "user", "content": user_text}
-            ]
-        )
-        reply_text = response.choices[0].message.content
+    openai.api_key = OPENAI_API_KEY
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": f"Ты менеджер по продажам Avalon. Используй следующую информацию при ответах:\n\n{documents_context}"},
+            {"role": "user", "content": text}
+        ]
+    )
+    reply = response.choices[0].message.content
 
-        url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
-        headers = {
-            "Authorization": f"Bearer {WHATSAPP_TOKEN}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": from_number,
-            "type": "text",
-            "text": {"body": reply_text}
-        }
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {"chat_id": chat_id, "text": reply}
+    requests.post(url, json=payload)
 
-        requests.post(url, headers=headers, json=payload)
+    return "ok"
 
-    except Exception as e:
-        print("Error:", e)
-
-    return "ok", 200
+@app.route("/", methods=["GET"])
+def home():
+    return "Telegram bot running."
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

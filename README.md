@@ -1,19 +1,13 @@
-# WhatsApp GPT-4o Bot (Final)
+# Telegram GPT-4o Bot
 
-Поддержка webhook, чтение файлов из папки data/, вывод контекста в GPT-4o.
+Бот для Telegram с подключением GPT-4o и чтением контекста из текстовых файлов.
 
-## Как запустить на Render:
+## Как использовать
 
-1. Залей репозиторий на GitHub
-2. Создай Web Service на render.com
-3. Укажи:
-   - Build Command: pip install -r requirements.txt
-   - Start Command: python app.py
-4. Добавь переменные окружения:
-   - VERIFY_TOKEN=avalon-secret
-   - WHATSAPP_TOKEN=...
-   - OPENAI_API_KEY=...
-   - PHONE_NUMBER_ID=...
-
-5. Проверь webhook:
-https://your-domain/webhook?hub.verify_token=avalon-secret&hub.challenge=1234
+1. Залей на Render (как Web Service)
+2. Добавь переменные окружения:
+- OPENAI_API_KEY
+3. Настрой webhook:
+```
+https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook?url=https://your-render-url/<YOUR_TOKEN>
+```
