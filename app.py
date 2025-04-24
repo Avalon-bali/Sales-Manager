@@ -83,9 +83,7 @@ def telegram_webhook():
             try:
                 with open("data/system_prompt.txt", "r", encoding="utf-8") as f:
                     prompt_text = f.read()
-                send_telegram_message(chat_id, "📄 Current system prompt:
-
-" + prompt_text)
+                send_telegram_message(chat_id, "📄 Current system prompt:\n\n" + prompt_text) + prompt_text)
             except Exception as e:
                 send_telegram_message(chat_id, "❌ Failed to read system prompt.")
         else:
