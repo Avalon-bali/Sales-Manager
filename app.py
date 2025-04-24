@@ -15,12 +15,17 @@ def load_documents():
     folder = "data"
     context_parts = []
     for filename in os.listdir(folder):
-        if filename.endswith(".txt"):
+        if filename.endswith(".txt") and filename != "system_prompt.txt":
             with open(os.path.join(folder, filename), "r", encoding="utf-8") as f:
                 context_parts.append(f.read())
     return "\n\n".join(context_parts)
 
+def load_system_prompt():
+    with open("data/system_prompt.txt", "r", encoding="utf-8") as f:
+        return f.read()
+
 documents_context = load_documents()
+system_prompt = load_system_prompt()
 
 @app.route(f"/{TELEGRAM_TOKEN}", methods=["POST"])
 def telegram_webhook():
@@ -34,21 +39,17 @@ def telegram_webhook():
     if not chat_id:
         return "no chat_id", 400
 
-   if text.strip() == "/start":
-    welcome = (
-        "👋 Привет! Я — менеджер по продажам Avalon.\n"
-        "Можете спросить про любой проект, договор или условия инвестиций."
-    )
-    send_telegram_message(chat_id, welcome)
-    return "ok"
-
+    if text.strip() == "/start":
+        welcome = "👋 Привет! Я — менеджер по продажам Avalon.\nМожете спросить про любой проект, договор или условия инвестиций."
+        send_telegram_message(chat_id, welcome)
+        return "ok"
 
     try:
         openai.api_key = OPENAI_API_KEY
         response = openai.ChatCompletion.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": f"Ты менеджер Avalon. Используй следующую информацию при ответах:\n\n{documents_context}"},
+                {"role": "system", "content": f"{system_prompt}\n\n{documents_context}"},
                 {"role": "user", "content": text}
             ]
         )
