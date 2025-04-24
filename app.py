@@ -34,11 +34,14 @@ def telegram_webhook():
     if not chat_id:
         return "no chat_id", 400
 
-    if text.strip() == "/start":
-        welcome = "👋 Привет! Я — менеджер по продажам Avalon.
-Можете спросить про любой проект, договор или условия инвестиций."
-        send_telegram_message(chat_id, welcome)
-        return "ok"
+   if text.strip() == "/start":
+    welcome = (
+        "👋 Привет! Я — менеджер по продажам Avalon.\n"
+        "Можете спросить про любой проект, договор или условия инвестиций."
+    )
+    send_telegram_message(chat_id, welcome)
+    return "ok"
+
 
     try:
         openai.api_key = OPENAI_API_KEY
