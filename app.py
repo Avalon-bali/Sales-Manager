@@ -8,7 +8,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
-TELEGRAM_TOKEN = "7938243060:AAFIAUO5SjHRmDClpE_pHxCdEmFczKsQc4Q"
+TELEGRAM_TOKEN = "8116449369:AAGBPph9JSaUGVpS731xGsAXxthQYFrthpA"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
