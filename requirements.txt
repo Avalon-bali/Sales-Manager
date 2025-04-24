@@ -1,3 +1,4 @@
 openai>=1.0.0
 langchain
+langchain-openai
 python-telegram-bot>=20.0
