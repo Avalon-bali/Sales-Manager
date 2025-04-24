@@ -41,7 +41,13 @@ def telegram_webhook():
         return "no chat_id", 400
 
     if text.strip() == "/start":
-        welcome = "👋 Привет! Я — менеджер по продажам Avalon.\nМожете спросить про любой проект, договор или условия инвестиций."
+        welcome = (
+            "Hello!\n"
+            "I'm the AI sales assistant at Avalon — a real estate development company in Bali.\n"
+            "You can ask me anything about our projects, investment opportunities, or living in Bali.\n"
+            "I’ll do my best to assist you — and if needed, a real manager will follow up.\n"
+            "Feel free to write in any language — I’ll understand and reply accordingly."
+        )
         send_telegram_message(chat_id, welcome)
         return "ok"
 
