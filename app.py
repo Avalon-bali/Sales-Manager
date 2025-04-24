@@ -1,5 +1,5 @@
 from flask import Flask, request
-import openai
+from openai import OpenAI
 import requests
 import os
 from dotenv import load_dotenv
@@ -10,6 +10,7 @@ app = Flask(__name__)
 
 TELEGRAM_TOKEN = "7938243060:AAFIAUO5SjHRmDClpE_pHxCdEmFczKsQc4Q"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def load_documents():
     folder = "data"
@@ -45,8 +46,7 @@ def telegram_webhook():
         return "ok"
 
     try:
-        openai.api_key = OPENAI_API_KEY
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": f"{system_prompt}\n\n{documents_context}"},
