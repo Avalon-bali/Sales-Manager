@@ -1,26 +1,19 @@
-# WhatsApp + OpenAI GPT Sales Bot (Avalon)
+# WhatsApp GPT-4o Bot (Final)
 
-Backend-сервер для WhatsApp-бота, отвечающего через GPT-4o (OpenAI).
+Поддержка webhook, чтение файлов из папки data/, вывод контекста в GPT-4o.
 
-## Установка
+## Как запустить на Render:
 
-1. Установите зависимости:
-```
-pip install -r requirements.txt
-```
+1. Залей репозиторий на GitHub
+2. Создай Web Service на render.com
+3. Укажи:
+   - Build Command: pip install -r requirements.txt
+   - Start Command: python app.py
+4. Добавь переменные окружения:
+   - VERIFY_TOKEN=avalon-secret
+   - WHATSAPP_TOKEN=...
+   - OPENAI_API_KEY=...
+   - PHONE_NUMBER_ID=...
 
-2. Проверьте переменные в `.env` (уже добавлен OpenAI ключ)
-
-3. Запустите сервер:
-```
-python app.py
-```
-
-4. Задеплойте на Render/Railway и настройте Webhook в Meta Developer Console
-
-## Переменные окружения
-
-- `VERIFY_TOKEN` — токен для подтверждения webhook
-- `WHATSAPP_TOKEN` — токен WhatsApp Cloud API
-- `OPENAI_API_KEY` — ключ OpenAI GPT-4o
-- `PHONE_NUMBER_ID` — ID номера WhatsApp
+5. Проверь webhook:
+https://your-domain/webhook?hub.verify_token=avalon-secret&hub.challenge=1234
