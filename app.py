@@ -1,7 +1,7 @@
-import os
+from flask import Flask, request
 import openai
 import requests
-from flask import Flask, request
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,31 +23,49 @@ def load_documents():
 documents_context = load_documents()
 
 @app.route(f"/{TELEGRAM_TOKEN}", methods=["POST"])
-def webhook():
+def telegram_webhook():
     data = request.get_json()
-    message = data["message"]
-    chat_id = message["chat"]["id"]
+    print("🔔 Входящее сообщение от Telegram:", data)
+
+    message = data.get("message", {})
+    chat_id = message.get("chat", {}).get("id")
     text = message.get("text", "")
 
-    openai.api_key = OPENAI_API_KEY
-    response = openai.ChatCompletion.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": f"Ты менеджер по продажам Avalon. Используй следующую информацию при ответах:\n\n{documents_context}"},
-            {"role": "user", "content": text}
-        ]
-    )
-    reply = response.choices[0].message.content
+    if not chat_id:
+        return "no chat_id", 400
 
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {"chat_id": chat_id, "text": reply}
-    requests.post(url, json=payload)
+    if text.strip() == "/start":
+        welcome = "👋 Привет! Я — менеджер по продажам Avalon.
+Можете спросить про любой проект, договор или условия инвестиций."
+        send_telegram_message(chat_id, welcome)
+        return "ok"
 
+    try:
+        openai.api_key = OPENAI_API_KEY
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": f"Ты менеджер Avalon. Используй следующую информацию при ответах:\n\n{documents_context}"},
+                {"role": "user", "content": text}
+            ]
+        )
+        reply = response.choices[0].message.content
+    except Exception as e:
+        reply = f"Произошла ошибка при обращении к OpenAI: {e}"
+        print("❌ Ошибка GPT:", e)
+
+    send_telegram_message(chat_id, reply)
     return "ok"
+
+def send_telegram_message(chat_id, text):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {"chat_id": chat_id, "text": text}
+    r = requests.post(url, json=payload)
+    print("📤 Ответ отправлен:", r.status_code, r.text)
 
 @app.route("/", methods=["GET"])
 def home():
-    return "Telegram bot running."
+    return "Telegram GPT bot is running."
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
