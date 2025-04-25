@@ -39,7 +39,7 @@ def telegram_webhook():
         return "ok", 200
 
     if text.strip() == "/start":
-        send_message(chat_id, "👋 Привет! Я AI-ассистент Avalon. Можете задать мне вопрос про проекты или инвестиции на Бали.")
+        send_message(chat_id, "👋 Hello! I'm your AI assistant at Avalon. Ask me anything about projects or investment in Bali.")
         return "ok", 200
 
     try:
@@ -54,13 +54,13 @@ def telegram_webhook():
         reply = response.choices[0].message.content
         send_message(chat_id, reply)
     except Exception as e:
-        send_message(chat_id, f"⚠️ Ошибка: {e}")
+        send_message(chat_id, f"⚠️ Error: {e}")
 
     return "ok", 200
 
 @app.route("/", methods=["GET"])
 def home():
-    return "Bot is running."
+    return "Telegram bot is live!"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
