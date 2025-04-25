@@ -1,4 +1,1 @@
 flask
-openai
-requests
-python-dotenv
