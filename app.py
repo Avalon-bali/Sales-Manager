@@ -1,43 +1,27 @@
+from flask import Flask, request
+from openai import OpenAI
+import requests
 import os
-from telegram.ext import ApplicationBuilder, MessageHandler, filters
-from langchain_openai import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
-from langchain.schema import SystemMessage, HumanMessage
+from dotenv import load_dotenv
 
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+load_dotenv()
 
-llm = ChatOpenAI(api_key=OPENAI_API_KEY, model="gpt-4o")
+app = Flask(__name__)
 
-memory = ConversationBufferMemory(return_messages=True)
+TELEGRAM_TOKEN = "8116449369:AAEmgEZIcewrSDQ18-7CVbMntkZ4FMwey6k"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-PROMPT = """
-Ты — AI консультант отдела продаж AVALON.
-- Всегда представляйся именно так.
-- Общайся только на темы: Avalon, инвестиционная недвижимость на Бали (проекты OM / BUDDHA / TAO), жизнь на Бали, релокация, инвестиции.
-- Если пользователь задаёт вопросы на другие темы (например, Испания), вежливо возвращай разговор к указанным темам.
-- Никогда не упоминай, что ты бот или ИИ.
-- Общайся максимально естественно, как профессиональный консультант по продажам.
-- Основная цель: назначение звонка в Zoom/Google Meet в течение 2-3 сообщений.
-"""
+@app.route("/", methods=["POST"])
+def webhook():
+    data = request.get_json()
+    print("🔔 Incoming data:", data)
+    return "ok", 200
 
-async def send_message(update, context, text):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+@app.route("/", methods=["GET"])
+def index():
+    return "Telegram bot is live!"
 
-async def handle_message(update, context):
-    user_text = update.message.text.strip()
-
-    history = memory.load_memory_variables({})["history"]
-    
-    messages = [SystemMessage(content=PROMPT)] + history + [HumanMessage(content=user_text)]
-
-    response = llm.invoke(messages).content
-
-    memory.save_context({"input": user_text}, {"output": response})
-
-    await send_message(update, context, response)
-
-if __name__ == '__main__':
-    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-    application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
-    application.run_polling()
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
